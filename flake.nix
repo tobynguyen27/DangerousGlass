@@ -15,9 +15,7 @@
             openal
 
             ## openal
-            alsa-lib
             libjack2
-            libpulseaudio
             pipewire
 
             ## glfw
@@ -32,7 +30,7 @@
       libs,
     }: {
       default = pkgs.mkShell {
-        packages = with pkgs; [];
+        packages = with pkgs; [zulu21];
         buildInputs = libs;
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
       };
