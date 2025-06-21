@@ -1,36 +1,41 @@
 {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = {
-    self,
-    nixpkgs,
-  }: let
-    pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    libs = with pkgs; [
-      ## native versions
-      glfw3-minecraft
-      openal
+  outputs = inputs: let
+    # openal doesn't support Darwin, I may add it back if I know an alternative package
+    supportedSystems = ["x86_64-linux" "aarch64-linux"];
+    forEachSupportedSystem = f:
+      inputs.nixpkgs.lib.genAttrs supportedSystems (system:
+        f rec {
+          pkgs = import inputs.nixpkgs {inherit system;};
 
-      ## openal
-      alsa-lib
-      libjack2
-      libpulseaudio
-      pipewire
+          libs = with pkgs; [
+            ## native versions
+            glfw3-minecraft
+            openal
 
-      ## glfw
-      libGL
+            ## openal
+            alsa-lib
+            libjack2
+            libpulseaudio
+            pipewire
 
-      udev # oshi
+            ## glfw
+            libGL
 
-      vulkan-loader # VulkanMod's lwjgl
-    ];
+            flite
+          ];
+        });
   in {
-    devShell.x86_64-linux = pkgs.mkShell {
-      packages = with pkgs; [];
-      buildInputs = libs;
-      LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
-    };
+    devShells = forEachSupportedSystem ({
+      pkgs,
+      libs,
+    }: {
+      default = pkgs.mkShell {
+        packages = with pkgs; [];
+        buildInputs = libs;
+        LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
+      };
+    });
   };
 }
