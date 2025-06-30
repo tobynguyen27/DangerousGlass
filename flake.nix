@@ -10,18 +10,27 @@
           pkgs = import inputs.nixpkgs {inherit system;};
 
           libs = with pkgs; [
-            ## native versions
             glfw3-minecraft
             openal
 
             ## openal
+            alsa-lib
             libjack2
+            libpulseaudio
             pipewire
 
             ## glfw
             libGL
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXext
+            xorg.libXrandr
+            xorg.libXxf86vm
 
-            flite
+            udev # oshi
+
+            vulkan-loader # VulkanMod's lwjgl
+            flite # text2speech
           ];
         });
   in {
@@ -30,7 +39,7 @@
       libs,
     }: {
       default = pkgs.mkShell {
-        packages = with pkgs; [zulu21];
+        packages = with pkgs; [mesa-demos pciutils xorg.xrandr zulu21];
         buildInputs = libs;
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
       };
