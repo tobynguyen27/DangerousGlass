@@ -1,6 +1,7 @@
 package dev.tobynguyen27.dangerousglass;
 
 import com.mojang.logging.LogUtils;
+import dev.tobynguyen27.dangerousglass.config.DGConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -12,6 +13,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
@@ -28,6 +30,7 @@ public class DangerousGlass {
         NeoForge.EVENT_BUS.register(this);
 
         modEventBus.addListener(this::onCommonSetup);
+        modContainer.registerConfig(ModConfig.Type.COMMON, DGConfig.SPEC);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
@@ -36,6 +39,10 @@ public class DangerousGlass {
 
     @SubscribeEvent
     public void onBreakBlock(BlockEvent.BreakEvent event) {
+        if(!DGConfig.ENABLED.getAsBoolean()) {
+            return;
+        }
+
         Vec3 playerPos = event.getPlayer().position();
         BlockPos blockPos = event.getPos();
 
@@ -43,7 +50,13 @@ public class DangerousGlass {
         BlockState state = event.getLevel().getBlockState(blockPos);
 
         if (state.is(Tags.Blocks.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Tags.Blocks.GLASS_BLOCKS_TINTED)) {
-            if (isInRange(blockPos, playerPos) && (!isWearingFullArmorSet(player))) {
+            if (isInRange(blockPos, playerPos)) {
+                if(DGConfig.ENABLE_ARMOR_PROTECTION.getAsBoolean()) {
+                    if(isWearingFullArmorSet(player)) {
+                        return;
+                    }
+                }
+
                 MobEffectInstance blindnessEffect = new MobEffectInstance(MobEffects.BLINDNESS, 80, 1, false, false);
                 MobEffectInstance poisonEffect = new MobEffectInstance(MobEffects.POISON, 75, 2, false, false);
 
@@ -76,6 +89,6 @@ public class DangerousGlass {
         int pY = (int) playerPos.y();
         int pZ = (int) playerPos.z();
 
-        return ((pX - xX) ^ 2 + (pY - yY) ^ 2 + (pZ - zZ) ^ 2) < 4;
+        return ((pX - xX) ^ 2 + (pY - yY) ^ 2 + (pZ - zZ) ^ 2) < DGConfig.RANGE.getAsInt();
     }
 }
