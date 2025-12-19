@@ -14,7 +14,11 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = minecraft_version + "-" + mod_version
+def ENV = System.getenv()
+def runNumber = ENV.GITHUB_RUN_NUMBER == null ? "9999" : ENV.GITHUB_RUN_NUMBER
+def isRelease = project.hasProperty("release")
+
+version = isRelease ? "${project.minecraft_version}-${project.mod_version}" : "${project.minecraft_version}-${project.mod_version}-build.${runNumber}"
 group = mod_group_id
 
 repositories {
@@ -165,13 +169,32 @@ neoForge.ideSyncTask generateModMetadata
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {
-        register('mavenJava', MavenPublication) {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.mod_id
+            version = project.version
+
             from components.java
         }
     }
+
     repositories {
-        maven {
-            url "file://${project.projectDir}/repo"
+        if (isRelease) {
+            maven {
+                url "https://maven.tobynguyen.dev/releases"
+                credentials {
+                    username ENV.MAVEN_USERNAME
+                    password ENV.MAVEN_PASSWORD
+                }
+            }
+        } else {
+            maven {
+                url "https://maven.tobynguyen.dev/snapshots"
+                credentials {
+                    username ENV.MAVEN_USERNAME
+                    password ENV.MAVEN_PASSWORD
+                }
+            }
         }
     }
 }
