@@ -39,7 +39,7 @@ public class DangerousGlass {
 
     @SubscribeEvent
     public void onBreakBlock(BlockEvent.BreakEvent event) {
-        if(!DGConfig.ENABLED.getAsBoolean()) {
+        if (!DGConfig.ENABLED.getAsBoolean()) {
             return;
         }
 
@@ -49,10 +49,12 @@ public class DangerousGlass {
         Player player = event.getPlayer();
         BlockState state = event.getLevel().getBlockState(blockPos);
 
-        if (state.is(Tags.Blocks.GLASS_BLOCKS) || state.is(Tags.Blocks.GLASS_PANES) || state.is(Tags.Blocks.GLASS_BLOCKS_TINTED)) {
+        if (state.is(Tags.Blocks.GLASS_BLOCKS)
+                || state.is(Tags.Blocks.GLASS_PANES)
+                || state.is(Tags.Blocks.GLASS_BLOCKS_TINTED)) {
             if (isInRange(blockPos, playerPos)) {
-                if(DGConfig.ENABLE_ARMOR_PROTECTION.getAsBoolean()) {
-                    if(isWearingFullArmorSet(player)) {
+                if (DGConfig.ENABLE_ARMOR_PROTECTION.getAsBoolean()) {
+                    if (isWearingFullArmorSet(player)) {
                         return;
                     }
                 }
@@ -67,11 +69,8 @@ public class DangerousGlass {
     }
 
     private boolean isWearingFullArmorSet(Player player) {
-        for (EquipmentSlot slot : new EquipmentSlot[]{
-                EquipmentSlot.HEAD,
-                EquipmentSlot.CHEST,
-                EquipmentSlot.LEGS,
-                EquipmentSlot.FEET}) {
+        for (EquipmentSlot slot :
+                new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
             if (player.getItemBySlot(slot).isEmpty()) {
                 return false;
             }
