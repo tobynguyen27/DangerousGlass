@@ -39,9 +39,16 @@ jobs:
             **/build/reports/
             **/build/test-results/
 
-      - name: Publish snapshots
+      - name: Publish snapshot
         if: ${{ github.ref == 'refs/heads/main' && success() }}
         run: ./gradlew publish
+        env:
+          MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+
+      - name: Publish release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && success() }}
+        run: ./gradlew publish -Drelease
         env:
           MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
